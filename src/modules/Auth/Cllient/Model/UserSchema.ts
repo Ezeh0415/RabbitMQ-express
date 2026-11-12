@@ -14,7 +14,7 @@ const userTable = pgTable("users", {
 
     email: varchar("email", { length: 255 }).notNull().unique(),
 
-    password: varchar("password", {length:255}).notNull(),
+    password: varchar("password", { length: 255 }).notNull(),
 
     otp: varchar("otp", { length: 6 }),
 
@@ -37,4 +37,4 @@ const userTable = pgTable("users", {
     lockUntil: timestamp("lock_until")
 })
 
-export default userTable;
+export { userTable };

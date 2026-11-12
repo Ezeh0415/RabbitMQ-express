@@ -20,4 +20,4 @@ const outPutSchema = pgTable("outputSchema", {
 
 });
 
-export default outPutSchema;
+export { outPutSchema };
