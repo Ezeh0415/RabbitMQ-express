@@ -12,8 +12,9 @@ class AuthController {
     signUp = async (req: Request, res: Response) => {
         try {
             const validatedInput = signUpDto.parse(req.body);
-
+            
             const result = await this.service.signUp(validatedInput);
+            console.log(result);
 
             res.status(201).json({
                 success: true,
@@ -23,6 +24,7 @@ class AuthController {
 
         } catch (error) {
             const err = error as Error;
+            console.error('[signUp] cause:', (error as any)?.cause?.message);
             throw new AppError(err);
 
         }

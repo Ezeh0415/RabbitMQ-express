@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec tsx src/server.ts",
-    "db:push": "npx drizzle-kit generate && npx drizzle-kit migrate"
+    "db:push": "npx drizzle-kit generate && npx drizzle-kit migrate",
+    "db:pull": "npx drizzle-kit pull"
   },
   "dependencies": {
     "amqplib": "^2.2.0",

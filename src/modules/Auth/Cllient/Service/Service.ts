@@ -2,10 +2,10 @@ import { eq } from "drizzle-orm";
 import { db } from "../../../../drizzle/postgresql-db";
 import { AppError } from "../../../utilis/AppError";
 import { ISignup } from "../../../utilis/Interface";
-import userTable from "../Model/UserSchema";
-import outPutSchema from "../Model/OutputSchema";
 import bcrypt from "bcryptjs";
 import { userTemplate } from "../../../Email/Templates";
+import { userTable } from "../Model/UserSchema";
+import { outPutSchema } from "../Model/OutputSchema";
 
 class clientAuthService {
     private user: typeof userTable;
@@ -27,7 +27,7 @@ class clientAuthService {
             }
 
             const existingUser = await db
-                .select({ id: this.user.id })
+                .select()
                 .from(this.user)
                 .where(eq(this.user.email, email))
                 .limit(1);
@@ -38,29 +38,35 @@ class clientAuthService {
 
             const hashPassword = await bcrypt.hash(password as string, this.saltRounds);
 
-            const [newUser] = await db
-            .insert(this.user)
-            .values({
-                name,
-                email,
-                password: hashPassword,
-                role:"staff"
+            const result = await db.transaction(async (tx) => {
+
+                const [newUser] = await tx
+                .insert(this.user)
+                .values({
+                    name: name,
+                    email: email,
+                    password: hashPassword,
+                    role:"staff"
+                })
+                .returning();
+    
+                const html = await userTemplate()
+    
+                await tx
+                .insert(this.Email)
+                .values({
+                    emailId: globalThis.crypto.randomUUID(),
+                    email: email,
+                    subject: "welcome to my new site",
+                    emailBody: html
+                });
+    
+    
+                return newUser;
             })
-            .returning();
 
-            const html = await userTemplate()
+            return result;
 
-            await db
-            .insert(this.Email)
-            .values({
-                emailId: globalThis.crypto.randomUUID(),
-                email: email,
-                subject: "welcome to my new site",
-                emailBody: html
-            });
-
-
-            return newUser;
 
         } catch (error) {
             const err = error as Error;
