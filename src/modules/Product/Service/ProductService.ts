@@ -1,14 +1,13 @@
+import emailContr from "../../Email/Controller/Contr";
 import { EmailRabbitService } from "../../Email/RabbitMq/RabbitMqService";
 
 
 class productService {
-    
     constructor(private readonly rabbit: EmailRabbitService) {
-        
     }
 
     async createProduct(message: object) {
-        console.log(message);
+        console.log(message ,"product");
         // Inside the try in startConsumer:
         
         // const err = new Error('simulated database failure');

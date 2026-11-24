@@ -5,6 +5,7 @@ import { boolean, integer, timestamp } from "drizzle-orm/pg-core";
 import { varchar } from "drizzle-orm/pg-core";
 import { pgTable, uuid } from "drizzle-orm/pg-core";
 import { userRoleEnum } from "../../../Enums";
+import { index } from "drizzle-orm/pg-core";
 
 
 const userTable = pgTable("users", {
@@ -35,6 +36,10 @@ const userTable = pgTable("users", {
     loginAttempts: integer("login_attempts").default(0),
 
     lockUntil: timestamp("lock_until")
-})
+},
+    (table) => ({
+        emailIdx: index("idx_auth_email").on(table.email)
+    })
+)
 
 export { userTable };

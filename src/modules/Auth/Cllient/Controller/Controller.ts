@@ -14,7 +14,6 @@ class AuthController {
             const validatedInput = signUpDto.parse(req.body);
             
             const result = await this.service.signUp(validatedInput);
-            console.log(result);
 
             res.status(201).json({
                 success: true,

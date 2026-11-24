@@ -27,7 +27,12 @@ class clientAuthService {
             }
 
             const existingUser = await db
-                .select()
+                .select({
+                    id: this.user.id,
+                    name: this.user.name,
+                    email: this.user.email,
+                    role: this.user.role,
+                })
                 .from(this.user)
                 .where(eq(this.user.email, email))
                 .limit(1);
@@ -41,27 +46,27 @@ class clientAuthService {
             const result = await db.transaction(async (tx) => {
 
                 const [newUser] = await tx
-                .insert(this.user)
-                .values({
-                    name: name,
-                    email: email,
-                    password: hashPassword,
-                    role:"staff"
-                })
-                .returning();
-    
+                    .insert(this.user)
+                    .values({
+                        name: name,
+                        email: email,
+                        password: hashPassword,
+                        role: "staff"
+                    })
+                    .returning();
+
                 const html = await userTemplate()
-    
+
                 await tx
-                .insert(this.Email)
-                .values({
-                    emailId: globalThis.crypto.randomUUID(),
-                    email: email,
-                    subject: "welcome to my new site",
-                    emailBody: html
-                });
-    
-    
+                    .insert(this.Email)
+                    .values({
+                        emailId: globalThis.crypto.randomUUID(),
+                        email: email,
+                        subject: "welcome to my new site",
+                        emailBody: html
+                    });
+
+
                 return newUser;
             })
 

@@ -17,3 +17,9 @@ export interface IEmail {
     subject: string,
     body: string,
 }
+
+export interface SendEmailInput {
+  email: string;
+  subject: string;
+  emailBody: string;
+}

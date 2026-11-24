@@ -7,3 +7,12 @@ export const userOutPutEnum = pgEnum("email_status", [
     "completed",
     "failed",
 ])
+
+export const paymentEnum = pgEnum("payment_status", [
+    "pending",
+    "processing",
+    "success",
+    "failed",
+    "abandoned",
+    "reverse"
+])

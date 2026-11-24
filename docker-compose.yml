@@ -38,9 +38,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: app_db
+      POSTGRES_DB: cohort7
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ezeanwe3942
     ports:
       - "5432:5432"
     volumes:

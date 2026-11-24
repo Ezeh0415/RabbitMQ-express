@@ -1,6 +1,8 @@
 import express from "express";
 import { ProductRoute } from "./Product";
 import { AuthRoute } from "./Auth";
+import { emailRouter } from "./Email";
+import { PaymentRouter } from "./Payment";
 const router = express.Router();
 
 
@@ -12,6 +14,14 @@ const defaultRoutes = [
     {
         path: "/product",
         route: ProductRoute,
+    },
+    {
+        path: "/paystack",
+        route: PaymentRouter,
+    },
+    {
+        path: "/email-cron",
+        route: emailRouter,
     }
 ]
 

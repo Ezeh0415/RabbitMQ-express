@@ -17,9 +17,9 @@ export class RabbitService {
         // let channel;
         
         // async function connect() {
-            //     const conn = await amqp.connect('amqp://localhost');
-            //     channel = await conn.createChannel();
-            //     await channel.assertQueue('product_queue', { durable: true });
+                // const conn = await amqp.connect('amqp://localhost');
+                // channel = await conn.createChannel();
+                // await channel.assertQueue('product_queue', { durable: true });
             // }
             
             // ===== THIS IS TO BE USED IF THE PUBLISH IS IN THE MAIN GATEWAY IN A MICROSERVICE PROJECT =====//
@@ -55,10 +55,6 @@ export class RabbitService {
 
                 const messageId = data.msguuid;
 
-                console.log(messageId);
-
-
-
                 if (!messageId) return channel.ack(msg); // no ID → can't dedupe
 
                 const redisKey = `processed:${messageId}`;
@@ -66,7 +62,7 @@ export class RabbitService {
                 // Check and "reserve" atomically. NX = only set if not exists
                 const acquired = await client.set(redisKey, '1', { NX: true, EX: 86400 });
                 if (!acquired) {
-                    console.log(`⏩ Already processed: ${messageId}`);
+                    console.log(`Already processed: ${messageId}`);
                     channel.ack(msg);
                     return;
                 }

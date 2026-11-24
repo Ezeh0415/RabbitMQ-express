@@ -2,18 +2,24 @@ import * as amqp from 'amqplib';
 import { config } from '../../../config/config';
 import { getEmailChannel } from './RabbitMq';
 import EmailService from '../service/EmailService';
+import { client } from '../../../middleware/redis-client';
+import { outPutSchema } from '../../../drizzle';
+import { db } from '../../../drizzle/postgresql-db';
+import { eq } from 'drizzle-orm';
 
 export class EmailRabbitService {
     private service: EmailService;
+    private Emails: typeof outPutSchema;
     constructor() {
         this.service = new EmailService();
+        this.Emails = outPutSchema;
     }
     /** not now Publish a message (fire-and-forget) — replaces `this.rabbitmq.emit(...)` */
     async publish(payload: object): Promise<void> {
         const channel = getEmailChannel();
         const messageId = crypto.randomUUID();
 
-        channel.emit(
+        channel.sendToQueue(
             config.emailQueue,
             Buffer.from(JSON.stringify(payload)),
             {
@@ -35,14 +41,32 @@ export class EmailRabbitService {
             async (msg) => {
                 if (!msg) return;   // consumer cancelled, not an error
 
+                const payload = JSON.parse(msg.content.toString());
+
+                const emailID = payload.emailId;
+
+                if (!emailID) return channel.ack(msg); // no ID → can't dedupe
+
+                const redisKey = `processed:${emailID}`;
+
+                // Check and "reserve" atomically. NX = only set if not exists
+                const acquired = await client.set(redisKey, '1', { NX: true, EX: 86400 });
+                if (!acquired) {
+                    console.log(`⏩ Already processed: ${emailID}`);
+                    channel.ack(msg);
+                    return;
+                }
+
+                
                 try {
                     const payload = JSON.parse(msg.content.toString());
 
-                    const result = await this.service.sendProductEmail(payload);
+                    const result = await this.service.sendEmail(payload);
 
                     channel.ack(msg);
                     return result;
                 } catch (error) {
+                    await client.del(redisKey);
                     await this.ackErrorwatch(error, msg, channel);
                 }
             },
@@ -85,6 +109,16 @@ export class EmailRabbitService {
             headers: msg.properties.headers,
             contentType: msg.properties.contentType,
         });
+
+        const payload = JSON.parse(msg.content.toString());
+
+        const email = payload.email;
+
+        await db
+        .update(this.Emails)
+        .set({status: "failed"})
+        .where(eq(this.Emails.email, email))
+
         channel.ack(msg);
     }
 }

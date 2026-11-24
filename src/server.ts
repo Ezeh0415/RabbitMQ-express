@@ -7,7 +7,7 @@ import router from "./modules/GeneralRoute";
 import { RabbitMQStart } from "./middleware/RabbitmqSetup";
 import { connectRedis } from "./middleware/redis-client";
 import { connectDB } from "./drizzle/postgresql-db";
-
+const jsonParser = express.json();
 dotenv.config();
 
 async function main() {
@@ -24,13 +24,20 @@ async function main() {
       credentials: false, // Disable credentials for CORS
     }),
   );
-  app.use(express.json());
 
+  
+  //   app.use((req, res, next) => {
+//   // Skip webhook paths and let the raw parser in the route handle it
+//   if (req.path === '/api/v1/paystack/webhook') {
+  //     return next();
+  //   }
+  //   jsonParser(req, res, next);
+  // });
+  
+  app.use("/api/v1", router);
   // Body Parsers
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
-  app.use("/api/v1", router);
 
   app.listen(process.env.PORT || 3000, () => {
     // connectDB();
